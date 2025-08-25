@@ -776,5 +776,6 @@ document.getElementById('viewToggle').addEventListener('click', () => {
   }
 })();
 </script>
+<script>document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll("img").forEach(img=>{const src=img.getAttribute("src")||"";if(src.startsWith("/images/")){img.setAttribute("src",src.replace(/^\//,""));}});});</script>
 </body>
 </html>
