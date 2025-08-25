@@ -508,7 +508,7 @@ function renderWaterfallList(){
   const items = applyFilters(MI_WATERFALLS);
   list.innerHTML = items.map((w,idx)=> `
     <article class="waterfall-card" style="animation-delay:${idx*0.04}s" onclick="showDetail(${w.id})" aria-label="${w.name} card">
-      <img class="card-image" src="images/vtahquamenonfalls40.jpg" alt="${w.name}">
+      <img class="card-image" src="images/placeholder.svg" alt="${w.name}">
       <div class="card-content">
         <div class="card-header">
           <h3 class="card-title">${w.name}</h3>
@@ -545,7 +545,7 @@ function renderDetail(w){
   const detail = el('#detailContent');
   detail.innerHTML = `
     <div class="detail-hero">
-      <img class="hero-image" src="images/vtahquamenonfalls40.jpg" alt="${w.name}">
+      <img class="hero-image" src="images/placeholder.svg" alt="${w.name}">
       <div class="hero-overlay">
         <div class="hero-title">${w.name}</div>
         <div class="hero-subtitle">${w.county} County · ${w.river}</div>
@@ -603,7 +603,7 @@ function renderFavorites(){
   empty.classList.add('hide');
   wrap.innerHTML = items.map(w => `
     <article class="waterfall-card" onclick="showDetail(${w.id})">
-      <img class="card-image" src="images/vtahquamenonfalls40.jpg" alt="${w.name}">
+      <img class="card-image" src="images/placeholder.svg" alt="${w.name}">
       <div class="card-content">
         <div class="card-header">
           <h3 class="card-title">${w.name}</h3>
