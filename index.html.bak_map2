@@ -1,0 +1,781 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Michigan Waterfalls — Mobile</title>
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
+<link rel="dns-prefetch" href="https://unpkg.com">
+<link rel="preconnect" href="https://{s}.tile.openstreetmap.org">
+<style>
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
+    :root {
+        --grad: linear-gradient(135deg, #5f72bd 0%, #9b23ea 100%);
+        --bg:#f7f8fa; --ink:#2c3e50;
+    }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        overflow-x: hidden;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    .app-container {
+        max-width: 428px;
+        margin: 0 auto;
+        min-height: 100vh;
+        background: white;
+        position: relative;
+        box-shadow: 0 0 40px rgba(0,0,0,0.08);
+    }
+    .nav-header { position: sticky; top:0; background: var(--grad); color:white; padding: env(safe-area-inset-top) 0 0 0; z-index:100; box-shadow:0 2px 10px rgba(0,0,0,0.1); }
+    .nav-content { display:flex; align-items:center; padding:14px 15px; position:relative; }
+    .back-btn, .nav-action {
+        width:40px; height:40px; border-radius:50%; background: rgba(255,255,255,0.18); border:none; color:white; font-size:20px;
+        cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .25s;
+    }
+    .back-btn { position:absolute; left:15px; }
+    .nav-action { position:absolute; right:15px; }
+    .back-btn:active, .nav-action:active { background: rgba(255,255,255,0.3); }
+    .nav-title { flex:1; text-align:center; font-size:18px; font-weight:700; letter-spacing:.3px; }
+    /* Search */
+    .search-container { padding: 15px; background:white; border-bottom:1px solid #e5e7eb; }
+    .search-box { display:flex; align-items:center; background:#f3f4f6; border-radius:12px; padding: 12px 14px; gap:10px; }
+    .search-input { flex:1; border:none; background:none; outline:none; font-size:16px; color:var(--ink); }
+    .search-input::placeholder { color:#9ca3af; }
+    /* Filter pills */
+    .filter-pills { padding: 10px 15px 12px; display:flex; gap:8px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+    .filter-pills::-webkit-scrollbar { display:none; }
+    .filter-pill {
+        padding:8px 14px; background:white; border:1px solid #e5e7eb; border-radius:999px; font-size:14px; white-space:nowrap; cursor:pointer; transition:.2s;
+    }
+    .filter-pill.active { background: var(--grad); color:white; border-color:transparent; }
+    /* Pages */
+    .page { display:none; animation: fadeIn .25s ease; }
+    .page.active { display:block; }
+    /* Cards */
+    .waterfall-list { padding: 0 0 70px; }
+    .waterfall-card {
+        background:white; margin:10px 15px; border-radius:16px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08);
+        cursor:pointer; transition: transform .25s, box-shadow .25s; animation: slideUp .45s ease both;
+    }
+    .waterfall-card:active { transform: scale(.985); }
+    .card-image { width:100%; height:180px; object-fit:cover; background: linear-gradient(to bottom,#e5e7eb,#f3f4f6); }
+    .card-content { padding: 14px; }
+    .card-header { display:flex; justify-content:space-between; align-items:start; gap:8px; margin-bottom:6px; }
+    .card-title { font-size:18px; font-weight:700; color:var(--ink); flex:1; }
+    .distance-tag { background: var(--grad); color:white; padding: 4px 10px; border-radius: 12px; font-size:12px; font-weight:600; white-space:nowrap; }
+    .card-description { color:#6b7280; font-size:14px; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .card-features { display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; }
+    .feature-tag { display:flex; align-items:center; gap:5px; padding:4px 8px; background:#f3f4f6; border-radius:8px; font-size:12px; color:#6b7280; }
+    /* Detail */
+    .detail-hero { position:relative; height: 350px; overflow:hidden; }
+    .hero-image { width:100%; height:100%; object-fit:cover; }
+    .hero-overlay { position:absolute; inset:auto 0 0 0; background: linear-gradient(to top, rgba(0,0,0,.75), transparent); padding: 26px 18px; }
+    .hero-title { color:white; font-size:28px; font-weight:800; margin-bottom:6px; }
+    .hero-subtitle { color: rgba(255,255,255,.9); font-size:14px; }
+    .detail-content { padding: 18px; }
+    .info-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:20px; }
+    .info-card { background:#f9fafb; padding:12px; border-radius:12px; border:1px solid #e5e7eb; }
+    .info-label { color:#6b7280; font-size:11px; text-transform:uppercase; letter-spacing:.4px; margin-bottom:3px; }
+    .info-value { color:var(--ink); font-size:16px; font-weight:700; }
+    .section { margin-bottom:22px; }
+    .section-title { font-size:18px; font-weight:800; color:var(--ink); margin-bottom:8px; }
+    .section-text { color:#6b7280; line-height:1.6; font-size:15px; }
+    .action-buttons { display:flex; gap:10px; margin:20px 0; }
+    .btn { flex:1; padding:14px; border-radius:12px; border:none; font-size:16px; font-weight:700; cursor:pointer; text-decoration:none; text-align:center; display:flex; align-items:center; justify-content:center; gap:8px; transition: transform .15s; }
+    .btn:active { transform: scale(.97); }
+    .btn-primary { background: var(--grad); color:white; }
+    .btn-secondary { background:#f3f4f6; color:var(--ink); }
+    /* Map */
+    .map-container { padding: 15px; }
+    #map { height: 360px; border-radius: 16px; overflow:hidden; }
+    .map-cta { display:flex; gap:10px; margin: 10px 0 15px; }
+    .chip { background:#f3f4f6; border:1px solid #e5e7eb; padding:8px 12px; border-radius:999px; font-weight:600; font-size:13px; cursor:pointer; }
+    .nearby-list { background:white; border-radius:16px; padding:15px; box-shadow:0 2px 8px rgba(0,0,0,.08); margin-top:15px; }
+    .nearby-title { font-size:16px; font-weight:800; margin-bottom:10px; color:var(--ink); }
+    .nearby-item { display:flex; align-items:center; padding:10px 0; border-bottom:1px solid #f3f4f6; cursor:pointer; }
+    .nearby-item:last-child { border-bottom:none; }
+    .nearby-number { width:24px; height:24px; border-radius:50%; background: var(--grad); color:white; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; margin-right:10px; }
+    .nearby-info { flex:1; }
+    .nearby-name { font-size:14px; font-weight:700; color:var(--ink); }
+    .nearby-distance { font-size:12px; color:#6b7280; }
+    /* Favorites empty state */
+    .empty { padding: 20px; text-align:center; margin-top:100px; }
+    .empty .big { font-size:48px; margin-bottom:12px; }
+    .empty h3 { font-size:20px; font-weight:800; color:var(--ink); margin-bottom:8px; }
+    .empty p { color:#6b7280; }
+    /* Bottom nav */
+    .bottom-nav { position:fixed; bottom:0; left:0; right:0; background:white; border-top:1px solid #e5e7eb; padding:8px 0 env(safe-area-inset-bottom); z-index:100; max-width:428px; margin:0 auto; }
+    .nav-items { display:flex; justify-content:space-around; }
+    .nav-item { flex:1; padding:8px; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; transition: color .2s; color:#9ca3af; }
+    .nav-item.active { color:#9b23ea; }
+    .nav-icon { font-size:24px; }
+    .nav-label { font-size:11px; font-weight:700; }
+    /* Animations */
+    @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+    @keyframes slideUp { from{ opacity:0; transform: translateY(16px);} to{ opacity:1; transform: translateY(0);} }
+    .hide { display:none !important; }
+</style>
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin="anonymous"
+/>
+</head>
+<body>
+<div class="app-container">
+    <!-- Header -->
+    <div class="nav-header">
+        <div class="nav-content">
+            <button class="back-btn hide" id="backBtn" title="Back">←</button>
+            <div class="nav-title" id="navTitle">Michigan Waterfalls</div>
+            <button class="nav-action" id="viewToggle" title="Toggle Map/List">⊞</button>
+        </div>
+    </div>
+
+    <!-- Home Page -->
+    <div id="homePage" class="page active" role="region" aria-label="Explore">
+        <div class="search-container">
+            <div class="search-box">
+                <span aria-hidden="true">🔍</span>
+                <input type="text" class="search-input" placeholder="Search by name, county, or river…" id="searchInput" />
+            </div>
+        </div>
+        <div class="filter-pills" id="filterPills">
+            <div class="filter-pill active" data-filter="all">All</div>
+            <div class="filter-pill" data-filter="nearby">&lt; 50 miles</div>
+            <div class="filter-pill" data-filter="tall">50+ ft</div>
+            <div class="filter-pill" data-filter="easy">Easy Access</div>
+            <div class="filter-pill" data-filter="scenic">Most Scenic</div>
+            <div class="filter-pill" data-filter="up">Upper Peninsula</div>
+            <div class="filter-pill" data-filter="lp">Lower Peninsula</div>
+        </div>
+        <div id="waterfallList" class="waterfall-list"></div>
+    </div>
+
+    <!-- Detail Page -->
+    <div id="detailPage" class="page" role="region" aria-label="Waterfall detail">
+        <div id="detailContent"></div>
+    </div>
+
+    <!-- Map Page -->
+    <div id="mapPage" class="page" role="region" aria-label="Map">
+        <div class="map-container">
+            <div id="map"></div>
+            <div class="map-cta">
+                <button class="chip" id="locateBtn">📍 Use My Location</button>
+                <button class="chip" id="resetBtn">↺ Reset</button>
+            </div>
+            <div class="nearby-list">
+                <div class="nearby-title">Nearest Waterfalls</div>
+                <div id="nearbyList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Favorites Page -->
+    <div id="favoritesPage" class="page" role="region" aria-label="Favorites">
+        <div id="favoritesList"></div>
+        <div id="favoritesEmpty" class="empty">
+            <div class="big">❤️</div>
+            <h3>No Favorites Yet</h3>
+            <p>Tap the heart on any waterfall to save it here.</p>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <div class="bottom-nav" role="navigation" aria-label="Bottom navigation">
+        <div class="nav-items">
+            <div class="nav-item active" data-page="home" title="Explore">
+                <span class="nav-icon">🏔️</span><span class="nav-label">Explore</span>
+            </div>
+            <div class="nav-item" data-page="map" title="Map">
+                <span class="nav-icon">📍</span><span class="nav-label">Map</span>
+            </div>
+            <div class="nav-item" data-page="favorites" title="Favorites">
+                <span class="nav-icon">❤️</span><span class="nav-label">Favorites</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+<script>
+// --- Data (exclusive to Michigan) ---
+// Coordinates and basic facts compiled from official or public sources (NPS, state tourism, USGS, Wikipedia).
+// Heights are approximate; access and difficulty are generalized for trip-planning only.
+const MI_WATERFALLS = [
+  // East / Central UP (Pictured Rocks area)
+  {id: 101, name: "Munising Falls", county:"Alger", river:"Munising Creek",
+   height_ft: 50, height:"50 ft", difficulty:"Easy", trail:"0.4 mi paved",
+   lat:46.4226786, lon:-86.6212334,
+   image:"https://upload.wikimedia.org/wikipedia/commons/2/25/Munising_Falls.jpg",
+   link:"https://www.nps.gov/piro/planyourvisit/waterfalls.htm",
+   region:"UP", scenic:true, access:"Paved trail & overlooks"},
+  {id: 102, name: "Miners Falls", county:"Alger", river:"Miners River",
+   height_ft: 40, height:"40 ft", difficulty:"Moderate", trail:"1.2 mi RT",
+   lat:46.4780, lon:-86.5860,
+   image:"https://upload.wikimedia.org/wikipedia/commons/d/d1/Miners_Falls_-_Pictured_Rocks_National_Lakeshore.jpg",
+   link:"https://www.nps.gov/piro/planyourvisit/waterfalls.htm",
+   region:"UP", scenic:true, access:"Gravel trail, stairs at end"},
+  {id: 103, name: "Wagner Falls", county:"Alger", river:"Wagner Creek",
+   height_ft: 20, height:"20 ft", difficulty:"Easy", trail:"0.3 mi boardwalk",
+   lat:46.387526, lon:-86.646904,
+   image:"https://upload.wikimedia.org/wikipedia/commons/3/37/Wagner_Falls.jpg",
+   link:"https://www.michigan.gov/recsearch/parks/wagnerfalls",
+   region:"UP", scenic:true, access:"State scenic site"},
+  {id: 104, name: "Au Train Falls", county:"Alger", river:"Au Train River",
+   height_ft: 40, height:"~40 ft total", difficulty:"Easy", trail:"Short walks",
+   lat:46.3743, lon:-86.8155,
+   image:"https://upload.wikimedia.org/wikipedia/commons/3/32/Au_Train_Falls.jpg",
+   link:"https://www.waterfallsofthekeweenaw.com/au-train/au-train-falls/",
+   region:"UP", access:"Upper & lower viewpoints"},
+  {id: 105, name: "Mosquito Falls", county:"Alger", river:"Mosquito River",
+   height_ft: 8, height:"8–10 ft (two drops)", difficulty:"Moderate", trail:"~2 mi RT",
+   lat:46.51639, lon:-86.47778,
+   image:"https://upload.wikimedia.org/wikipedia/commons/5/5a/Mosquito_Falls.jpg",
+   link:"https://www.nps.gov/piro/planyourvisit/waterfalls.htm",
+   region:"UP", access:"No pets on this trail"},
+  {id: 106, name: "Chapel Falls", county:"Alger", river:"Chapel Creek",
+   height_ft: 60, height:"~60 ft", difficulty:"Moderate", trail:"2.4 mi RT",
+   lat:46.5135, lon:-86.4669,
+   image:"https://upload.wikimedia.org/wikipedia/commons/1/13/Chapel_Falls_Pictured_Rocks_National_Lakeshore_2016.jpg",
+   link:"https://www.nps.gov/places/chapel-falls.htm",
+   region:"UP", scenic:true},
+  {id: 107, name: "Spray Falls", county:"Alger", river:"Unnamed cliff outfall",
+   height_ft: 70, height:"~70 ft", difficulty:"Challenging", trail:"Boat or long hike",
+   lat:46.5469, lon:-86.4486,
+   image:"https://upload.wikimedia.org/wikipedia/commons/b/bd/Spray_Falls_Pictured_Rocks.jpg",
+   link:"https://en.wikipedia.org/wiki/Spray_Falls_(Michigan)",
+   region:"UP", scenic:true},
+
+  // Marquette area
+  {id: 201, name: "Dead River Falls", county:"Marquette", river:"Dead River",
+   height_ft: 90, height:"Series ~90 ft", difficulty:"Moderate", trail:"1–2 mi",
+   lat:46.5686111, lon:-87.4783333,
+   image:"https://upload.wikimedia.org/wikipedia/commons/d/d4/Dead_River_Falls_2009.jpg",
+   link:"https://lakesuperiorcircletour.info/location/dead-river-falls-trail/",
+   region:"UP", scenic:true},
+  {id: 202, name: "Morgan Falls", county:"Marquette", river:"Morgan Creek",
+   height_ft: 20, height:"~10–20 ft", difficulty:"Easy", trail:"2–3 mi RT options",
+   lat:46.50536, lon:-87.4379,
+   image:"https://upload.wikimedia.org/wikipedia/commons/1/16/Morgan_Falls_Marquette.jpg",
+   link:"https://www.travelmarquette.com/listing/morgan-creek-falls/97/",
+   region:"UP"},
+  {id: 203, name: "Carp River Falls", county:"Marquette", river:"Carp River",
+   height_ft: 30, height:"~30 ft total", difficulty:"Moderate", trail:"1–2 mi (via Marquette Mountain Rd)",
+   lat:46.50293, lon:-87.44811,
+   image:"https://upload.wikimedia.org/wikipedia/commons/3/39/Carp_River_Falls_Marquette.jpg",
+   link:"https://www.waterfallsofthekeweenaw.com/carp-river/carp-river-falls/",
+   region:"UP"},
+
+  // Western UP — Ontonagon / Gogebic (Black River, Presque Isle)
+  {id: 301, name:"Bond Falls", county:"Ontonagon", river:"Middle Branch Ontonagon",
+   height_ft: 40, height:"~40 ft", difficulty:"Easy", trail:"Boardwalk loop",
+   lat:46.414, lon:-89.0575,
+   image:"https://upload.wikimedia.org/wikipedia/commons/8/8a/Bond_Falls.jpg",
+   link:"https://gowaterfalling.com/waterfalls/bond.shtml",
+   region:"UP", scenic:true, access:"Boardwalk & multiple viewpoints"},
+  {id: 302, name:"Agate Falls", county:"Ontonagon", river:"Middle Branch Ontonagon",
+   height_ft: 40, height:"~40 ft", difficulty:"Moderate", trail:"0.5 mi",
+   lat:46.4887, lon:-89.0111,
+   image:"https://upload.wikimedia.org/wikipedia/commons/8/88/Agate_Falls_Winter_2006.jpg",
+   link:"https://gowaterfalling.com/waterfalls/agate.shtml",
+   region:"UP", scenic:true},
+  {id: 303, name:"O Kun de Kun Falls", county:"Ontonagon", river:"Baltimore River",
+   height_ft: 25, height:"~25 ft", difficulty:"Moderate", trail:"2.5–3 mi RT (NCT)",
+   lat:46.4444, lon:-89.0647,
+   image:"https://upload.wikimedia.org/wikipedia/commons/f/f6/O-Kun-de-Kun_Falls_Michigan_2017.jpg",
+   link:"https://gowaterfalling.com/waterfalls/okundekun.shtml",
+   region:"UP", scenic:true},
+  {id: 304, name:"Gabbro (Baker's) Falls", county:"Gogebic", river:"Black River",
+   height_ft: 40, height:"~40 ft in drops", difficulty:"Moderate", trail:"Short, rugged",
+   lat:46.4746, lon:-89.9966,
+   image:"https://upload.wikimedia.org/wikipedia/commons/2/27/Gabbro_Falls.jpg",
+   link:"https://gowaterfalling.com/waterfalls/gabbro.shtml",
+   region:"UP"},
+  {id: 305, name:"Great Conglomerate Falls", county:"Gogebic", river:"Black River",
+   height_ft: 30, height:"~30 ft", difficulty:"Easy", trail:"0.75 mi",
+   lat:46.63159, lon:-90.05493,
+   image:"https://upload.wikimedia.org/wikipedia/commons/c/c3/Great_Conglomerate_Falls.JPG",
+   link:"https://en.wikipedia.org/wiki/Great_Conglomerate_Falls",
+   region:"UP"},
+  {id: 306, name:"Potawatomi Falls", county:"Gogebic", river:"Black River",
+   height_ft: 30, height:"~30 ft", difficulty:"Easy", trail:"Paved, accessible",
+   lat:46.6140, lon:-90.0719,
+   image:"https://upload.wikimedia.org/wikipedia/commons/b/b0/Potawatomi_Falls.JPG",
+   link:"https://gowaterfalling.com/waterfalls/potawatomi.shtml",
+   region:"UP", access:"Wheelchair accessible path"},
+  {id: 307, name:"Gorge Falls", county:"Gogebic", river:"Black River",
+   height_ft: 25, height:"~25 ft", difficulty:"Easy", trail:"Short with stairs",
+   lat:46.6147, lon:-90.0662,
+   image:"https://upload.wikimedia.org/wikipedia/commons/0/02/Gorge_Falls_Black_River.jpg",
+   link:"https://gowaterfalling.com/waterfalls/gorge.shtml",
+   region:"UP"},
+  {id: 308, name:"Sandstone Falls", county:"Gogebic", river:"Black River",
+   height_ft: 15, height:"~15 ft", difficulty:"Easy", trail:"0.5 mi",
+   lat:46.64997, lon:-90.04758,
+   image:"https://upload.wikimedia.org/wikipedia/commons/4/4e/Sandstone_Falls_Black_River.jpg",
+   link:"https://www.waterfallsofthekeweenaw.com/gogebic-black-river/sandstone-falls/",
+   region:"UP"},
+  {id: 309, name:"Rainbow Falls", county:"Gogebic", river:"Black River",
+   height_ft: 30, height:"~30+ ft", difficulty:"Moderate", trail:"0.5–0.75 mi + stairs",
+   lat:46.6168, lon:-90.0756,
+   image:"https://upload.wikimedia.org/wikipedia/commons/8/80/Rainbow_Falls_Black_River.jpg",
+   link:"https://en.wikipedia.org/wiki/Rainbow_Falls_(Michigan)",
+   region:"UP", scenic:true},
+
+  // Porcupine Mountains (Presque Isle River)
+  {id: 401, name:"Manabezho Falls", county:"Ontonagon", river:"Presque Isle River",
+   height_ft: 25, height:"~25 ft", difficulty:"Easy", trail:"Short paths & platforms",
+   lat:46.79823, lon:-89.73124,
+   image:"https://upload.wikimedia.org/wikipedia/commons/1/1e/Manabezho_Falls.jpg",
+   link:"https://en.wikipedia.org/wiki/Manabezho_Falls",
+   region:"UP", scenic:true},
+  {id: 402, name:"Manido Falls", county:"Ontonagon", river:"Presque Isle River",
+   height_ft: 15, height:"~15 ft", difficulty:"Easy", trail:"Short paths & platforms",
+   lat:46.79575, lon:-89.73273,
+   image:"https://upload.wikimedia.org/wikipedia/commons/d/d4/Manido_Falls.jpg",
+   link:"https://en.wikipedia.org/wiki/Manido_Falls",
+   region:"UP"},
+  {id: 403, name:"Nawadaha Falls", county:"Ontonagon", river:"Presque Isle River",
+   height_ft: 15, height:"~15 ft", difficulty:"Easy", trail:"Short paths & platforms",
+   lat:46.79308, lon:-89.73415,
+   image:"https://upload.wikimedia.org/wikipedia/commons/6/6a/Nawadaha_Falls.jpg",
+   link:"https://en.wikipedia.org/wiki/Nawadaha_Falls",
+   region:"UP"},
+
+  // Keweenaw Peninsula
+  {id: 501, name:"Eagle River Falls", county:"Keweenaw", river:"Eagle River",
+   height_ft: 40, height:"~40 ft", difficulty:"Easy", trail:"Roadside + footbridge",
+   lat:47.4119444, lon:-88.2955556,
+   image:"https://upload.wikimedia.org/wikipedia/commons/5/50/Eagle_River_Falls_2009.jpg",
+   link:"https://lakesuperiorcircletour.info/location/eagle-river-falls/",
+   region:"UP"},
+  {id: 502, name:"Jacob's Falls", county:"Keweenaw", river:"Jacob's Creek",
+   height_ft: 20, height:"~20 ft", difficulty:"Easy", trail:"Roadside",
+   lat:47.4275, lon:-88.237,
+   image:"https://upload.wikimedia.org/wikipedia/commons/1/1c/Jacobs_Falls_-_Keweenaw_Peninsula.jpg",
+   link:"https://gowaterfalling.com/waterfalls/jacob.shtml",
+   region:"UP"},
+  {id: 503, name:"Houghton-Douglass Falls", county:"Houghton", river:"Hammell Creek",
+   height_ft: 110, height:"~110 ft (tallest in MI)", difficulty:"Challenging", trail:"Rugged gorge",
+   lat:47.181, lon:-88.4109,
+   image:"https://upload.wikimedia.org/wikipedia/commons/f/f8/Houghton-Douglass_Falls_2022.jpg",
+   link:"https://en.wikipedia.org/wiki/Houghton-Douglass_Falls",
+   region:"UP", scenic:true},
+
+  // Central / Eastern UP
+  {id: 601, name:"Laughing Whitefish Falls", county:"Alger", river:"Laughing Whitefish River",
+   height_ft: 100, height:"~100 ft slide", difficulty:"Easy", trail:"0.6–1 mi",
+   lat:46.413, lon:-86.857, // approximate park area center
+   image:"https://upload.wikimedia.org/wikipedia/commons/5/5d/Laughing_Whitefish_Falls.jpg",
+   link:"https://gowaterfalling.com/waterfalls/laughingwhitefish.shtml",
+   region:"UP", scenic:true},
+  {id: 602, name:"Rock River Falls", county:"Alger", river:"Rock River",
+   height_ft: 15, height:"~15 ft", difficulty:"Challenging", trail:"~3.7 mi RT, sandy two-tracks",
+   lat:46.3355, lon:-86.7182,
+   image:"https://upload.wikimedia.org/wikipedia/commons/9/91/Rock_River_Falls.jpg",
+   link:"https://hikingmichigan.com/rock-river-falls/",
+   region:"UP"},
+  {id: 603, name:"Yellow Dog Falls", county:"Marquette", river:"Yellow Dog River",
+   height_ft: 20, height:"~20 ft (series)", difficulty:"Easy", trail:"~1 mi",
+   lat:46.65946, lon:-87.76264,
+   image:"https://upload.wikimedia.org/wikipedia/commons/2/2a/Yellow_Dog_Falls_2010.jpg",
+   link:"https://www.uptravel.com/listing/yellow-dog-river-waterfalls/3748/",
+   region:"UP"},
+
+  // Menominee / Dickinson
+  {id: 701, name:"Piers Gorge (rapids & falls)", county:"Dickinson", river:"Menominee River",
+   height_ft: 0, height:"Class III rapids & drops", difficulty:"Moderate", trail:"2–3 mi along gorge",
+   lat:45.7577778, lon:-87.9441667,
+   image:"https://upload.wikimedia.org/wikipedia/commons/a/a2/Menominee_River_Piers_Gorge.jpg",
+   link:"https://www2.dnr.state.mi.us/parksandtrails/Details.aspx?id=429&type=SPTR",
+   region:"UP", scenic:true},
+  {id: 702, name:"Fumee Falls", county:"Dickinson", river:"Fumee Creek",
+   height_ft: 25, height:"~25 ft (3 steps)", difficulty:"Easy", trail:"Roadside park",
+   lat:45.8069444, lon:-87.9783333,
+   image:"https://upload.wikimedia.org/wikipedia/commons/7/7f/Fumee_Falls_Michigan.jpg",
+   link:"https://gowaterfalling.com/waterfalls/fumee.shtml",
+   region:"UP"},
+
+  // Eastern UP / Tahquamenon
+  {id: 801, name:"Upper Tahquamenon Falls", county:"Chippewa", river:"Tahquamenon River",
+   height_ft: 48, height:"~48–50 ft, 200 ft wide", difficulty:"Easy", trail:"Boardwalk, stairs",
+   lat:46.5740, lon:-85.2560,
+   image:"https://upload.wikimedia.org/wikipedia/commons/7/72/Upper_Tahquamenon_Falls.jpg",
+   link:"https://en.wikipedia.org/wiki/Tahquamenon_Falls",
+   region:"UP", scenic:true, access:"State park facilities"},
+  {id: 802, name:"Lower Tahquamenon Falls", county:"Chippewa", river:"Tahquamenon River",
+   height_ft: 20, height:"~20 ft (islands & drops)", difficulty:"Easy", trail:"Boardwalk loops, rowboat",
+   lat:46.5854, lon:-85.2455,
+   image:"https://upload.wikimedia.org/wikipedia/commons/8/83/Lower_Tahquamenon_Falls_2014.jpg",
+   link:"https://en.wikipedia.org/wiki/Tahquamenon_Falls",
+   region:"UP"},
+
+  // Lower Peninsula (rare waterfalls)
+  {id: 901, name:"Ocqueoc Falls", county:"Presque Isle", river:"Ocqueoc River",
+   height_ft: 5, height:"~5 ft (broad)", difficulty:"Easy", trail:"Short paths, accessible",
+   lat:45.4304, lon:-84.02542,
+   image:"https://upload.wikimedia.org/wikipedia/commons/6/64/Ocqueoc_Falls_Presque_Isle_County_Michigan.JPG",
+   link:"https://www.michigan.org/property/ocqueoc-falls",
+   region:"LP", access:"Wheelchair-friendly trout stream"},
+];
+
+// --- State ---
+let state = {
+  page: 'home',
+  current: null,
+  favorites: JSON.parse(localStorage.getItem('mi_favorites') || '[]'),
+  filter: 'all',
+  query: '',
+  userLocation: null,
+};
+
+// --- Helpers ---
+const el = sel => document.querySelector(sel);
+const miles = km => (km * 0.621371);
+function haversine(lat1, lon1, lat2, lon2) {
+  const toRad = d => d * Math.PI / 180;
+  const R = 6371; // km
+  const dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function formatMiles(n) { return `${n.toFixed(1)} mi`; }
+function isFavorite(id){ return state.favorites.includes(id); }
+function toggleFavorite(id){
+  const i = state.favorites.indexOf(id);
+  if(i>=0) state.favorites.splice(i,1); else state.favorites.push(id);
+  localStorage.setItem('mi_favorites', JSON.stringify(state.favorites));
+  renderWaterfallList(); renderFavorites();
+  if(state.current && state.current.id===id) renderDetail(state.current);
+}
+
+// --- Filtering & Search ---
+function applyFilters(items){
+  let out = [...items];
+
+  // search
+  if(state.query){
+    const q = state.query.toLowerCase();
+    out = out.filter(w => (w.name+w.county+w.river).toLowerCase().includes(q));
+  }
+  // filter pills
+  switch(state.filter){
+    case 'nearby':
+      if(state.userLocation){
+        out = out
+          .map(w => ({...w, _dist: miles(haversine(state.userLocation.lat, state.userLocation.lon, w.lat, w.lon))}))
+          .filter(w => isFinite(w._dist) && w._dist < 50)
+          .sort((a,b)=> a._dist - b._dist);
+      } else {
+        // fallback: assume centered around Marquette
+        const def = {lat:46.5436, lon:-87.3953};
+        out = out
+          .map(w => ({...w, _dist: miles(haversine(def.lat, def.lon, w.lat, w.lon))}))
+          .filter(w => w._dist < 50)
+          .sort((a,b)=> a._dist - b._dist);
+      }
+      break;
+    case 'tall':
+      out = out.filter(w => (w.height_ft||0) >= 50);
+      break;
+    case 'easy':
+      out = out.filter(w => (w.difficulty||'').toLowerCase()==='easy' || (w.access||'').toLowerCase().includes('accessible'));
+      break;
+    case 'scenic':
+      out = out.filter(w => w.scenic);
+      break;
+    case 'up':
+      out = out.filter(w => w.region==='UP');
+      break;
+    case 'lp':
+      out = out.filter(w => w.region==='LP');
+      break;
+    default: break;
+  }
+  return out;
+}
+
+// --- Renderers ---
+function renderWaterfallList(){
+  const list = el('#waterfallList');
+  const items = applyFilters(MI_WATERFALLS);
+  list.innerHTML = items.map((w,idx)=> `
+    <article class="waterfall-card" style="animation-delay:${idx*0.04}s" onclick="showDetail(${w.id})" aria-label="${w.name} card">
+      <img class="card-image" src="images/vtahquamenonfalls40.jpg" alt="${w.name}">
+      <div class="card-content">
+        <div class="card-header">
+          <h3 class="card-title">${w.name}</h3>
+          ${renderDistanceTag(w)}
+        </div>
+        <p class="card-description">${w.county} County · ${w.river} · ${w.height}</p>
+        <div class="card-features">
+          <div class="feature-tag">📏 ${w.height}</div>
+          <div class="feature-tag">🥾 ${w.difficulty||'Varies'}</div>
+          <div class="feature-tag">${isFavorite(w.id) ? '❤️ Saved' : '♡ Save'}</div>
+        </div>
+      </div>
+    </article>
+  `).join('');
+}
+function renderDistanceTag(w){
+  try {
+    let dist = null;
+    if(state.userLocation && isFinite(w.lat) && isFinite(w.lon)){
+      dist = miles(haversine(state.userLocation.lat, state.userLocation.lon, w.lat, w.lon));
+    }
+    if(dist===null){
+      // center on Michigan's Upper Peninsula midpoint if unknown
+      const def = {lat:46.5436, lon:-87.3953};
+      dist = miles(haversine(def.lat, def.lon, w.lat, w.lon));
+    }
+    if(!isFinite(dist)) return `<div class="distance-tag">MI</div>`;
+    return `<div class="distance-tag">${formatMiles(dist)}</div>`;
+  } catch(e){ return `<div class="distance-tag">MI</div>`; }
+}
+
+function renderDetail(w){
+  const fav = isFavorite(w.id);
+  const detail = el('#detailContent');
+  detail.innerHTML = `
+    <div class="detail-hero">
+      <img class="hero-image" src="images/vtahquamenonfalls40.jpg" alt="${w.name}">
+      <div class="hero-overlay">
+        <div class="hero-title">${w.name}</div>
+        <div class="hero-subtitle">${w.county} County · ${w.river}</div>
+      </div>
+    </div>
+    <div class="detail-content">
+      <div class="info-grid">
+        <div class="info-card">
+          <div class="info-label">Height</div>
+          <div class="info-value">${w.height}</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Difficulty</div>
+          <div class="info-value">${w.difficulty || 'Varies'}</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Region</div>
+          <div class="info-value">${w.region==='UP' ? 'Upper Peninsula' : 'Lower Peninsula'}</div>
+        </div>
+        <div class="info-card">
+          <div class="info-label">Trail</div>
+          <div class="info-value">${w.trail || '—'}</div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Overview</div>
+        <p class="section-text">
+          ${w.name} is a Michigan waterfall on the ${w.river} in ${w.county} County.
+          Distances shown are approximations; check local conditions before you go.
+        </p>
+      </div>
+      <div class="action-buttons">
+        <a class="btn btn-primary" href="https://www.google.com/maps/search/?api=1&query=${w.lat},${w.lon}" target="_blank" rel="noopener">🧭 Directions</a>
+        <a class="btn btn-secondary" href="${w.link}" target="_blank" rel="noopener">🔗 Official/Info</a>
+      </div>
+      <div class="action-buttons">
+        <button class="btn ${fav ? 'btn-secondary' : 'btn-primary'}" onclick="toggleFavorite(${w.id}); event.stopPropagation();">
+          ${fav ? '❤️ Remove Favorite' : '♡ Add to Favorites'}
+        </button>
+        <button class="btn btn-secondary" onclick="shareWaterfall(${w.id}); event.stopPropagation();">📤 Share</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderFavorites(){
+  const wrap = el('#favoritesList');
+  const empty = el('#favoritesEmpty');
+  const items = MI_WATERFALLS.filter(w => state.favorites.includes(w.id));
+  if(items.length===0){
+    wrap.innerHTML = '';
+    empty.classList.remove('hide');
+    return;
+  }
+  empty.classList.add('hide');
+  wrap.innerHTML = items.map(w => `
+    <article class="waterfall-card" onclick="showDetail(${w.id})">
+      <img class="card-image" src="images/vtahquamenonfalls40.jpg" alt="${w.name}">
+      <div class="card-content">
+        <div class="card-header">
+          <h3 class="card-title">${w.name}</h3>
+          ${renderDistanceTag(w)}
+        </div>
+        <p class="card-description">${w.county} County · ${w.river} · ${w.height}</p>
+        <div class="card-features">
+          <div class="feature-tag">📏 ${w.height}</div>
+          <div class="feature-tag">🥾 ${w.difficulty||'Varies'}</div>
+          <div class="feature-tag">❤️ Favorited</div>
+        </div>
+      </div>
+    </article>
+  `).join('');
+}
+
+// --- Pages ---
+function showPage(page){
+  state.page = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  el('#' + page + 'Page').classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(i => {
+    i.classList.toggle('active', i.dataset.page === page);
+  });
+  el('#navTitle').textContent =
+    page==='home' ? 'Michigan Waterfalls' :
+    page==='map' ? 'Map' :
+    page==='favorites' ? 'Favorites' :
+    'Michigan Waterfalls';
+  el('#backBtn').classList.add('hide');
+  if(page==='map') { setTimeout(initMap, 0); }
+  if(page==='favorites') { renderFavorites(); }
+}
+function showDetail(id){
+  const w = MI_WATERFALLS.find(x => x.id===id);
+  if(!w) return;
+  state.current = w;
+  el('#homePage').classList.remove('active');
+  el('#mapPage').classList.remove('active');
+  el('#favoritesPage').classList.remove('active');
+  el('#detailPage').classList.add('active');
+  el('#backBtn').classList.remove('hide');
+  el('#navTitle').textContent = w.name;
+  renderDetail(w);
+}
+function navigateBack(){
+  if(el('#detailPage').classList.contains('active')){
+    el('#detailPage').classList.remove('active');
+    el('#homePage').classList.add('active');
+    el('#backBtn').classList.add('hide');
+    el('#navTitle').textContent = 'Michigan Waterfalls';
+  }
+}
+
+// --- Search & Filters ---
+function setupSearch(){
+  el('#searchInput').addEventListener('input', e => {
+    state.query = e.target.value.trim();
+    renderWaterfallList();
+  });
+  document.querySelectorAll('.filter-pill').forEach(p => {
+    p.addEventListener('click', () => {
+      document.querySelectorAll('.filter-pill').forEach(x=>x.classList.remove('active'));
+      p.classList.add('active');
+      state.filter = p.dataset.filter;
+      renderWaterfallList();
+      if(state.filter==='nearby') requestUserLocation();
+    });
+  });
+}
+
+// --- Geolocation & distances ---
+function requestUserLocation(){
+  if(!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(pos => {
+    state.userLocation = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+    renderWaterfallList();
+    if(window._map) { window._map.setView([state.userLocation.lat, state.userLocation.lon], 8); }
+    renderNearbyList();
+  });
+}
+
+// --- Sharing ---
+async function shareWaterfall(id){
+  const w = MI_WATERFALLS.find(x => x.id===id);
+  if(!w) return;
+  const shareUrl = `https://www.google.com/maps/search/?api=1&query=${w.lat},${w.lon}`;
+  try{
+    if(navigator.share){
+      await navigator.share({ title: `${w.name} — Michigan Waterfalls`, text: `${w.name} (${w.height})`, url: shareUrl });
+    } else {
+      await navigator.clipboard.writeText(shareUrl);
+      alert('Link copied to clipboard!');
+    }
+  }catch(e){
+    window.open(shareUrl, '_blank');
+  }
+}
+
+// --- Map (Leaflet) ---
+function initMap(){
+  if(window._map) { return; }
+  const map = L.map('map', { scrollWheelZoom:false });
+  window._map = map;
+  const tiles = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18, attribution: '&copy; OpenStreetMap'
+  });
+  tiles.addTo(map);
+  // Default center ~ Marquette
+  map.setView([46.5436, -87.3953], 7);
+
+  const pin = L.icon({ iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                       shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                       iconSize:[25,41], iconAnchor:[12,41], popupAnchor:[1,-34], shadowSize:[41,41] });
+
+  MI_WATERFALLS.filter(w => Number.isFinite(w.lat) && Number.isFinite(w.lon)).forEach(w => {
+    const m = L.marker([w.lat, w.lon], { icon: pin }).addTo(map);
+    m.bindPopup(`
+      <strong>${w.name}</strong><br>
+      ${w.county} County • ${w.height}<br>
+      <a href="#" onclick="showDetail(${w.id}); return false;">View details</a>
+    `);
+  });
+
+  // Buttons
+  el('#locateBtn').onclick = () => requestUserLocation();
+  el('#resetBtn').onclick = () => map.setView([46.5436, -87.3953], 7);
+
+  renderNearbyList();
+}
+
+function renderNearbyList(){
+  const list = el('#nearbyList');
+  const center = state.userLocation || {lat:46.5436, lon:-87.3953};
+  const sorted = MI_WATERFALLS
+    .filter(w => Number.isFinite(w.lat) && Number.isFinite(w.lon))
+    .map(w => ({...w, _d: miles(haversine(center.lat, center.lon, w.lat, w.lon))}))
+    .sort((a,b)=> a._d - b._d)
+    .slice(0, 10);
+  list.innerHTML = sorted.map((w,i)=>`
+    <div class="nearby-item" onclick="showDetail(${w.id})">
+      <div class="nearby-number">${i+1}</div>
+      <div class="nearby-info">
+        <div class="nearby-name">${w.name}</div>
+        <div class="nearby-distance">${w.county} County • ${formatMiles(w._d)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// --- UI bindings ---
+document.getElementById('backBtn').addEventListener('click', navigateBack);
+document.querySelectorAll('.nav-item').forEach(i => i.addEventListener('click', () => showPage(i.dataset.page)));
+document.getElementById('viewToggle').addEventListener('click', () => {
+  // quick toggle between home & map for convenience
+  showPage(state.page === 'map' ? 'home' : 'map');
+});
+
+// --- Start ---
+(function initApp(){
+  setupSearch();
+  renderWaterfallList();
+  // Attempt to get user location early for distance sorting (optional)
+  if(navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      state.userLocation = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+      renderWaterfallList();
+      renderNearbyList();
+    });
+  }
+})();
+</script>
+<script>document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll("img").forEach(img=>{const src=img.getAttribute("src")||"";if(src.startsWith("/images/")){img.setAttribute("src",src.replace(/^\//,""));}});});</script>
+</body>
+</html>
