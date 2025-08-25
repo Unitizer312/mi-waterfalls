@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Waterfalls of Michigan & Northern Wisconsin</title>
+   <style>
+       * {
+           margin: 0;
+           padding: 0;
+           box-sizing: border-box;
+       }
+       
+       body {
+           font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+           line-height: 1.6;
+           color: #333;
+           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+           min-height: 100vh;
+       }
+       
+       .container {
+           max-width: 1200px;
+           margin: 0 auto;
+           padding: 0 20px;
+       }
+       
+       header {
+           background: rgba(255, 255, 255, 0.95);
+           backdrop-filter: blur(10px);
+           box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+           position: sticky;
+           top: 0;
+           z-index: 100;
+       }
+       
+       .header-content {
+           padding: 1rem 0;
+           text-align: center;
+       }
+       
+       h1 {
+           color: #2c3e50;
+           font-size: 1.8rem;
+           margin-bottom: 0.5rem;
+           font-weight: 700;
+       }
+       
+       .subtitle {
+           color: #7f8c8d;
+           font-size: 1rem;
+           margin-bottom: 1rem;
+       }
+       
+       .nav-buttons {
+           display: flex;
+           flex-wrap: wrap;
+           gap: 0.5rem;
+           justify-content: center;
+           margin-top: 1rem;
+       }
+       
+       .nav-btn {
+           background: #3498db;
+           color: white;
+           border: none;
+           padding: 0.5rem 1rem;
+           border-radius: 25px;
+           cursor: pointer;
+           font-size: 0.9rem;
+           transition: all 0.3s ease;
+       }
+       
+       .nav-btn:hover, .nav-btn.active {
+           background: #2980b9;
+           transform: translateY(-2px);
+       }
+       
+       .search-container {
+           margin: 1rem 0;
+       }
+       
+       .search-input {
+           width: 100%;
+           padding: 0.75rem 1rem;
+           border: 2px solid #ddd;
+           border-radius: 25px;
+           font-size: 1rem;
+           outline: none;
+           transition: border-color 0.3s ease;
+       }
+       
+       .search-input:focus {
+           border-color: #3498db;
+       }
+       
+       main {
+           padding: 2rem 0;
+       }
+       
+       .falls-grid {
+           display: grid;
+           grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+           gap: 1.5rem;
+           margin-top: 2rem;
+       }
+       
+       .fall-card {
+           background: white;
+           border-radius: 15px;
+           overflow: hidden;
+           box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+           transition: all 0.3s ease;
+           cursor: pointer;
+       }
+       
+       .fall-card:hover {
+           transform: translateY(-5px);
+           box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+       }
+       
+       .fall-image {
+           width: 100%;
+           height: 200px;
+           position: relative;
+           overflow: hidden;
+           background: linear-gradient(45deg, #74b9ff, #0984e3);
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           color: white;
+           font-size: 1rem;
+       }
+       
+       .fall-image img {
+           width: 100%;
+           height: 100%;
+           object-fit: cover;
+           transition: transform 0.3s ease;
+           position: absolute;
+           top: 0;
+           left: 0;
+       }
+       
+       .fall-image:hover img {
+           transform: scale(1.1);
+       }
+       
+       .image-overlay {
+           position: absolute;
+           bottom: 0;
+           left: 0;
+           right: 0;
+           background: linear-gradient(transparent, rgba(0,0,0,0.7));
+           color: white;
+           padding: 1rem;
+           font-size: 0.9rem;
+           opacity: 0;
+           transition: opacity 0.3s ease;
+           z-index: 2;
+       }
+       
+       .fall-image:hover .image-overlay {
+           opacity: 1;
+       }
+       
+       .image-placeholder {
+           z-index: 1;
+       }
+       
+       .fall-content {
+           padding: 1.5rem;
+       }
+       
+       .fall-name {
+           font-size: 1.3rem;
+           font-weight: 600;
+           color: #2c3e50;
+           margin-bottom: 0.5rem;
+       }
+       
+       .fall-location {
+           color: #7f8c8d;
+           margin-bottom: 0.5rem;
+           font-size: 0.9rem;
+       }
+       
+       .fall-stats {
+           display: flex;
+           gap: 1rem;
+           margin: 0.75rem 0;
+           flex-wrap: wrap;
+       }
+       
+       .stat {
+           background: #ecf0f1;
+           padding: 0.3rem 0.6rem;
+           border-radius: 12px;
+           font-size: 0.8rem;
+           color: #2c3e50;
+       }
+       
+       .fall-description {
+           color: #34495e;
+           font-size: 0.9rem;
+           line-height: 1.5;
+           margin-bottom: 1rem;
+       }
+       
+       .accessibility-info {
+           display: flex;
+           gap: 0.5rem;
+           margin-bottom: 1rem;
+           flex-wrap: wrap;
+       }
+       
+       .accessibility-badge {
+           background: #27ae60;
+           color: white;
+           padding: 0.2rem 0.5rem;
+           border-radius: 8px;
+           font-size: 0.7rem;
+       }
+       
+       .difficulty-easy { background: #27ae60; }
+       .difficulty-moderate { background: #f39c12; }
+       .difficulty-hard { background: #e74c3c; }
+       
+       .view-details {
+           background: #3498db;
+           color: white;
+           border: none;
+           padding: 0.6rem 1.2rem;
+           border-radius: 8px;
+           cursor: pointer;
+           font-size: 0.9rem;
+           width: 100%;
+           transition: background 0.3s ease;
+       }
+       
+       .view-details:hover {
+           background: #2980b9;
+       }
+       
+       .modal {
+           display: none;
+           position: fixed;
+           top: 0;
+           left: 0;
+           right: 0;
+           bottom: 0;
+           background: rgba(0, 0, 0, 0.8);
+           z-index: 1000;
+           overflow-y: auto;
+       }
+       
+       .modal-content {
+           background: white;
+           margin: 2rem auto;
+           padding: 0;
+           border-radius: 15px;
+           max-width: 600px;
+           max-height: 90vh;
+           overflow-y: auto;
+           position: relative;
+       }
+       
+       .modal-header {
+           padding: 1.5rem;
+           border-bottom: 1px solid #eee;
+           position: sticky;
+           top: 0;
+           background: white;
+           z-index: 10;
+       }
+       
+       .modal-body {
+           padding: 1.5rem;
+       }
+       
+       .close {
+           position: absolute;
+           right: 1rem;
+           top: 1rem;
+           background: none;
+           border: none;
+           font-size: 1.5rem;
+           cursor: pointer;
+           color: #7f8c8d;
+       }
+       
+       .gallery {
+           display: grid;
+           grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+           gap: 0.5rem;
+           margin: 1rem 0;
+       }
+       
+       .gallery-img {
+           width: 100%;
+           height: 120px;
+           border-radius: 8px;
+           overflow: hidden;
+           position: relative;
+           cursor: pointer;
+           background: linear-gradient(45deg, #74b9ff, #0984e3);
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           color: white;
+           font-size: 0.8rem;
+       }
+       
+       .gallery-img img {
+           width: 100%;
+           height: 100%;
+           object-fit: cover;
+           transition: transform 0.3s ease;
+           position: absolute;
+           top: 0;
+           left: 0;
+       }
+       
+       .gallery-img:hover img {
+           transform: scale(1.1);
+       }
+       
+       .stats-overview {
+           background: rgba(255, 255, 255, 0.95);
+           padding: 1.5rem;
+           border-radius: 15px;
+           margin-bottom: 2rem;
+           text-align: center;
+       }
+       
+       .stats-grid {
+           display: grid;
+           grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+           gap: 1rem;
+           margin-top: 1rem;
+       }
+       
+       .stat-box {
+           text-align: center;
+       }
+       
+       .stat-number {
+           font-size: 2rem;
+           font-weight: bold;
+           color: #3498db;
+       }
+       
+       .stat-label {
+           color: #7f8c8d;
+           font-size: 0.9rem;
+       }
+       
+       .region-title {
+           font-size: 1.5rem;
+           color: white;
+           margin-bottom: 1rem;
+           text-align: center;
+           text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+       }
+       
+       footer {
+           background: rgba(0, 0, 0, 0.8);
+           color: white;
+           text-align: center;
+           padding: 2rem 0;
+           margin-top: 3rem;
+       }
+       
+       @media (max-width: 768px) {
+           .container {
+               padding: 0 15px;
+           }
+           
+           h1 {
+               font-size: 1.5rem;
+           }
+           
+           .falls-grid {
+               grid-template-columns: 1fr;
+           }
+           
+           .nav-buttons {
+               gap: 0.3rem;
+           }
+           
+           .nav-btn {
+               padding: 0.4rem 0.8rem;
+               font-size: 0.8rem;
+           }
+           
+           .modal-content {
+               margin: 1rem;
+               max-width: calc(100% - 2rem);
+           }
+       }
+   </style>
+</head>
+<body>
+   <header>
+       <div class="container">
+           <div class="header-content">
+               <h1>🏔️ Waterfalls Explorer</h1>
+               <p class="subtitle">Discover the stunning waterfalls of Michigan & Northern Wisconsin</p>
+               
+               <div class="search-container">
+                   <input type="text" class="search-input" placeholder="Search waterfalls..." id="searchInput">
+               </div>
+               
+               <div class="nav-buttons">
+                   <button class="nav-btn active" onclick="filterByState('all')">All Falls</button>
+                   <button class="nav-btn" onclick="filterByState('michigan')">Michigan</button>
+                   <button class="nav-btn" onclick="filterByState('wisconsin')">Wisconsin</button>
+                   <button class="nav-btn" onclick="filterByDifficulty('easy')">Easy Access</button>
+                   <button class="nav-btn" onclick="filterByDifficulty('moderate')">Moderate Hike</button>
+               </div>
+           </div>
+       </div>
+   </header>
+
+   <main>
+       <div class="container">
+           <div class="stats-overview">
+               <h2>Waterfall Statistics</h2>
+               <div class="stats-grid">
+                   <div class="stat-box">
+                       <div class="stat-number">300+</div>
+                       <div class="stat-label">Michigan Waterfalls</div>
+                   </div>
+                   <div class="stat-box">
+                       <div class="stat-number">50+</div>
+                       <div class="stat-label">Wisconsin Waterfalls</div>
+                   </div>
+                   <div class="stat-box">
+                       <div class="stat-number">165ft</div>
+                       <div class="stat-label">Tallest (Big Manitou)</div>
+                   </div>
+                   <div class="stat-box">
+                       <div class="stat-number">12</div>
+                       <div class="stat-label">Featured Falls</div>
+                   </div>
+               </div>
+           </div>
+
+           <section>
+               <h2 class="region-title">Featured Waterfalls</h2>
+               <div class="falls-grid" id="fallsGrid">
+                   <div class="fall-card" data-state="michigan" data-difficulty="easy">
+                       <div class="fall-image">
+                           <span class="image-placeholder">📸 Tahquamenon Falls</span>
+                           <img src="tahquamenon-falls.jpg" alt="Tahquamenon Falls" loading="lazy" onerror="this.style.display='none'">
+                           <div class="image-overlay">View Gallery</div>
+                       </div>
+                       <div class="fall-content">
+                           <h3 class="fall-name">Tahquamenon Falls</h3>
+                           <p class="fall-location">Paradise, Michigan</p>
+                           <div class="fall-stats">
+                               <span class="stat">Height: 50ft</span>
+                               <span class="stat">Width: 200ft</span>
+                           </div>
+                           <div class="accessibility-info">
+                               <span class="accessibility-badge difficulty-easy">Easy Access</span>
+                               <span class="accessibility-badge">Boardwalk</span>
+                           </div>
+                           <p class="fall-description">Michigan's largest waterfall, famous for its amber-colored water and thunderous roar.</p>
+                           <button class="view-details" onclick="openModal('tahquamenon')">View Details</button>
+                       </div>
+                   </div>
+
+                   <div class="fall-card" data-state="michigan" data-difficulty="easy">
+                       <div class="fall-image">
+                           <span class="image-placeholder">📸 Bond Falls</span>
+                           <img src="bond-falls.jpg" alt="Bond Falls" loading="lazy" onerror="this.style.display='none'">
+                           <div class="image-overlay">View Gallery</div>
+                       </div>
+                       <div class="fall-content">
+                           <h3 class="fall-name">Bond Falls</h3>
+                           <p class="fall-location">Paulding, Michigan</p>
+                           <div class="fall-stats">
+                               <span class="stat">Height: 40ft</span>
+                               <span class="stat">Width: 100ft</span>
+                           </div>
+                           <div class="accessibility-info">
+                               <span class="accessibility-badge difficulty-easy">Easy Access</span>
+                               <span class="accessibility-badge">Wheelchair Accessible</span>
+                           </div>
+                           <p class="fall-description">One of Michigan's most impressive waterfalls with scenic boardwalks.</p>
+                           <button class="view-details" onclick="openModal('bond')">View Details</button>
+                       </div>
+                   </div>
+
+                   <div class="fall-card" data-state="michigan" data-difficulty="moderate">
+                       <div class="fall-image">
+                           <span class="image-placeholder">📸 Munising Falls</span>
+                           <img src="munising-falls.jpg" alt="Munising Falls" loading="lazy" onerror="this.style.display='none'">
+                           <div class="image-overlay">View Gallery</div>
+                       </div>
+                       <div class="fall-content">
+                           <h3 class="fall-name">Munising Falls</h3>
+                           <p class="fall-location">Munising, Michigan</p>
+                           <div class="fall-stats">
+                               <span class="stat">Height: 50ft</span>
+                               <span class="stat">Pictured Rocks</span>
+                           </div>
+                           <div class="accessibility-info">
+                               <span class="accessibility-badge difficulty-moderate">0.5mi Trail</span>
+                               <span class="accessibility-badge">National Lakeshore</span>
+                           </div>
+                           <p class="fall-description">Located in Pictured Rocks National Lakeshore with stunning sandstone views.</p>
+                           <button class="view-details" onclick="openModal('munising')">View Details</button>
+                       </div>
+                   </div>
+
+                   <div class="fall-card" data-state="wisconsin" data-difficulty="easy">
+                       <div class="fall-image">
+                           <span class="image-placeholder">📸 Big Manitou Falls</span>
+                           <img src="vbigmanitoufalls12.jpg" alt="Big Manitou Falls" loading="lazy" onerror="this.style.display='none'">
+                           <div class="image-overlay">View Gallery</div>
+                       </div>
+                       <div class="fall-content">
+                           <h3 class="fall-name">Big Manitou Falls</h3>
+                           <p class="fall-location">Pattison State Park, Wisconsin</p>
+                           <div class="fall-stats">
+                               <span class="stat">Height: 165ft</span>
+                               <span class="stat">Tallest in WI</span>
+                           </div>
+                           <div class="accessibility-info">
+                               <span class="accessibility-badge difficulty-easy">Easy Access</span>
+                               <span class="accessibility-badge">State Park</span>
+                           </div>
+                           <p class="fall-description">Wisconsin's tallest waterfall and 4th highest east of the Rocky Mountains.</p>
+                           <button class="view-details" onclick="openModal('bigmanitou')">View Details</button>
+                       </div>
+                   </div>
+
+                   <div class="fall-card" data-state="wisconsin" data-difficulty="easy">
+                       <div class="fall-image">
+                           <span class="image-placeholder">📸 Copper Falls</span>
+                           <img src="vcopperfalls2.jpg" alt="Copper Falls" loading="lazy" onerror="this.style.display='none'">
+                           <div class="image-overlay">View Gallery</div>
+                       </div>
+                       <div class="fall-content">
+                           <h3 class="fall-name">Copper Falls</h3>
+                           <p class="fall-location">Copper Falls State Park, Wisconsin</p>
+                           <div class="fall-stats">
+                               <span class="stat">Height: 40ft</span>
+                               <span class="stat">+ Brownstone</span>
+                           </div>
+                           <div class="accessibility-info">
+                               <span class="accessibility-badge difficulty-easy">Paved Trails</span>
+                               <span class="accessibility-badge">Two Falls</span>
+                           </div>
+                           <p class="fall-description">Beautiful state park with two major waterfalls on paved, accessible trails.</p>
+                           <button class="view-details" onclick="openModal('copper')">View Details</button>
+                       </div>
+                   </div>
+
+                   <div class="fall-card" data-state="wisconsin" data-difficulty="moderate">
+                       <div class="fall-image">
+                           <span class="image-placeholder">📸 Wren Falls</span>
+                           <img src="vwrenfalls3.jpg" alt="Wren Falls" loading="lazy" onerror="this.style.display='none'">
+                           <div class="image-overlay">View Gallery</div>
+                       </div>
+                       <div class="fall-content">
+                           <h3 class="fall-name">Wren Falls</h3>
+                           <p class="fall-location">Iron County, Wisconsin</p>
+                           <div class="fall-stats">
+                               <span class="stat">Height: 12ft</span>
+                               <span class="stat">Deep Gorge</span>
+                           </div>
+                           <div class="accessibility-info">
+                               <span class="accessibility-badge difficulty-moderate">1.5mi Hike</span>
+                               <span class="accessibility-badge">Dramatic Views</span>
+                           </div>
+                           <p class="fall-description">One of Wisconsin's most scenic falls with deep gorge and dramatic overlook views.</p>
+                           <button class="view-details" onclick="openModal('wren')">View Details</button>
+                       </div>
+                   </div>
+               </div>
+           </section>
+       </div>
+   </main>
+
+   <div id="waterfallModal" class="modal">
+       <div class="modal-content">
+           <div class="modal-header">
+               <button class="close" onclick="closeModal()">&times;</button>
+               <h2 id="modalTitle">Waterfall Details</h2>
+           </div>
+           <div class="modal-body">
+               <div id="modalContent"></div>
+           </div>
+       </div>
+   </div>
+
+   <footer>
+       <div class="container">
+           <p>&copy; 2024 Michigan & Wisconsin Waterfalls Explorer</p>
+           <p>Discover nature's beauty responsibly - Leave No Trace</p>
+       </div>
+   </footer>
+
+   <script>
+       const waterfallData = {
+           tahquamenon: {
+               name: "Tahquamenon Falls",
+               location: "Paradise, Michigan",
+               height: "50ft",
+               description: "Michigan's largest waterfall. The distinctive amber color comes from tannins, earning it the nickname 'Root Beer Falls'. Peak flow reaches 50,000 gallons per second.",
+               directions: "Located in Tahquamenon Falls State Park. Take M-123 north from Newberry or south from Paradise.",
+               bestTime: "Spring for maximum flow, Fall for colors",
+               features: ["Largest in Michigan", "Amber water", "Upper and Lower Falls", "Brewpub", "Camping"],
+               difficulty: "Easy - Paved trails",
+               images: ["tahquamenon22.jpg", "vtahquamenonfalls42.jpg", "vtahquamenonfalls45.jpg", "falltahq3.jpg"]
+           },
+           bond: {
+               name: "Bond Falls",
+               location: "Paulding, Michigan", 
+               height: "40ft",
+               description: "Second-best waterfall in Michigan with 40-foot main drop and 100+ foot width. Regulated flow ensures consistent scenic beauty. Recent renovations include wheelchair-accessible boardwalks.",
+               directions: "From US-2, take Bond Falls Road east 5 miles. Michigan State Scenic Site.",
+               bestTime: "Late spring through early fall",
+               features: ["Wheelchair accessible", "Multiple platforms", "Regulated flow", "State Scenic Site"],
+               difficulty: "Easy - Accessible boardwalk",
+               images: ["bondfalls12.jpg", "bondfalls15.jpg", "bondfallswide.jpg", "vbondfalls16.jpg"]
+           },
+           munising: {
+               name: "Munising Falls",
+               location: "Munising, Michigan",
+               height: "50ft", 
+               description: "Pictured Rocks National Lakeshore waterfall dropping 50 feet over sandstone cliff. Multiple viewpoints and educational displays about local geology.",
+               directions: "Off H-58 east of Munising. Follow signs from downtown.",
+               bestTime: "Spring for flow, winter for ice climbing",
+               features: ["National Lakeshore", "Multiple viewpoints", "Educational displays", "Ice climbing"],
+               difficulty: "Moderate - 0.5 mile trail",
+               images: ["vmunising10.jpg", "vmunising11.jpg", "vmunisingfalls21.jpg", "vwintermunising1.jpg"]
+           },
+           bigmanitou: {
+               name: "Big Manitou Falls",
+               location: "Pattison State Park, Wisconsin",
+               height: "165ft",
+               description: "Wisconsin's tallest waterfall and 4th highest east of the Rockies. Spectacular 165-foot plunge on the Black River with suspension footbridge viewing.",
+               directions: "Pattison State Park, 13 miles south of Superior on County Highway B.",
+               bestTime: "Spring for flow, fall for colors, winter for ice",
+               features: ["Tallest in Wisconsin", "Suspension footbridge", "State park amenities", "Camping"],
+               difficulty: "Easy - Short walk from parking",
+               images: ["vbigmanitoufalls12.jpg", "vbigmanitoufalls14.jpg", "vbigmanitou1.jpg", "vbigmanitou3.jpg"]
+           },
+           copper: {
+               name: "Copper Falls",
+               location: "Copper Falls State Park, Wisconsin",
+               height: "40ft",
+               description: "State park featuring Copper Falls (40ft) on Bad River and Brownstone Falls (30ft) on Tyler Forks River. Paved accessible trails connect both waterfalls.",
+               directions: "Off Highway 169 in Mellen, Wisconsin. State park entrance with visitor center.",
+               bestTime: "Spring for flow, summer for hiking, fall for colors",
+               features: ["Two waterfalls", "Paved trails", "State park facilities", "Swimming areas"],
+               difficulty: "Easy - Paved accessible trails",
+               images: ["vcopperfalls2.jpg", "vcopperfalls3.jpg", "vcopperfalls4.jpg", "vcopperfalls1.jpg"]
+           },
+           wren: {
+               name: "Wren Falls", 
+               location: "Iron County, Wisconsin",
+               height: "12ft",
+               description: "Wisconsin's most scenic waterfall despite modest height. Tyler Forks creates 100-foot-deep canyon with dramatic overlook views. Wild and undeveloped wilderness experience.",
+               directions: "From Highway 169, take Vogues Road 3.6 miles to Casey Sag Road. Trail south 1.3 miles.",
+               bestTime: "Spring through fall",
+               features: ["Deep gorge", "Dramatic overlooks", "Wilderness setting", "No development"],
+               difficulty: "Moderate - 1.5 mile forest hike",
+               images: ["vwrenfalls6.jpg", "vwrenfalls3.jpg", "wrenfalls2.jpg", "wrenunnamedfalls.jpg"]
+           }
+       };
+
+       function filterByState(state) {
+           const cards = document.querySelectorAll('.fall-card');
+           const buttons = document.querySelectorAll('.nav-btn');
+           
+           buttons.forEach(btn => btn.classList.remove('active'));
+           event.target.classList.add('active');
+           
+           cards.forEach(card => {
+               card.style.display = (state === 'all' || card.dataset.state === state) ? 'block' : 'none';
+           });
+       }
+
+       function filterByDifficulty(difficulty) {
+           const cards = document.querySelectorAll('.fall-card');
+           const buttons = document.querySelectorAll('.nav-btn');
+           
+           buttons.forEach(btn => btn.classList.remove('active'));
+           event.target.classList.add('active');
+           
+           cards.forEach(card => {
+               card.style.display = (card.dataset.difficulty === difficulty) ? 'block' : 'none';
+           });
+       }
+
+       function openModal(waterfallId) {
+           const modal = document.getElementById('waterfallModal');
+           const modalTitle = document.getElementById('modalTitle');
+           const modalContent = document.getElementById('modalContent');
+           const data = waterfallData[waterfallId];
+           
+           if (data) {
+               modalTitle.textContent = data.name;
+               modalContent.innerHTML = `
+                   <div class="gallery">
+                       ${data.images.map(img => `
+                           <div class="gallery-img">
+                               <span class="image-placeholder">📷 ${data.name}</span>
+                               <img src="${img}" alt="${data.name}" loading="lazy" onerror="this.style.display='none'">
+                           </div>
+                       `).join('')}
+                   </div>
+                   
+                   <h3>About ${data.name}</h3>
+                   <p><strong>Location:</strong> ${data.location}</p>
+                   <p><strong>Height:</strong> ${data.height}</p>
+                   <p><strong>Difficulty:</strong> ${data.difficulty}</p>
+                   
+                   <h4>Description</h4>
+                   <p>${data.description}</p>
+                   
+                   <h4>Getting There</h4>
+                   <p>${data.directions}</p>
+                   
+                   <h4>Best Time to Visit</h4>
+                   <p>${data.bestTime}</p>
+                   
+                   <h4>Key Features</h4>
+                   <ul>
+                       ${data.features.map(feature => `<li>${feature}</li>`).join('')}
+                   </ul>
+                   
+                   <div style="margin-top: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                       <h4>📍 Planning Your Visit</h4>
+                       <p><strong>Remember:</strong> Check weather conditions, bring appropriate footwear, and practice Leave No Trace principles.</p>
+                   </div>
+               `;
+               
+               modal.style.display = 'block';
+               document.body.style.overflow = 'hidden';
+           }
+       }
+
+       function closeModal() {
+           document.getElementById('waterfallModal').style.display = 'none';
+           document.body.style.overflow = 'auto';
+       }
+
+       document.getElementById('searchInput').addEventListener('input', function() {
+           const searchTerm = this.value.toLowerCase();
+           const cards = document.querySelectorAll('.fall-card');
+           
+           cards.forEach(card => {
+               const name = card.querySelector('.fall-name').textContent.toLowerCase();
+               const location = card.querySelector('.fall-location').textContent.toLowerCase();
+               
+               if (name.includes(searchTerm) || location.includes(searchTerm)) {
+                   card.style.display = 'block';
+               } else {
+                   card.style.display = 'none';
+               }
+           });
+       });
+
+       window.onclick = function(event) {
+           const modal = document.getElementById('waterfallModal');
+           if (event.target === modal) {
+               closeModal();
+           }
+       }
+
+       document.addEventListener('keydown', function(event) {
+           if (event.key === 'Escape') {
+               closeModal();
+           }
+       });
+   </script>
+</body>
+</html>
